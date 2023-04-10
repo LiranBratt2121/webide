@@ -3,45 +3,33 @@
 <h1>Hello World!</h1>
 
 <form id="form">
-  <input type="message" name="message">
+  <textarea name="message" cols="50" rows="50" id="text-area"></textarea>
 </form>
-
-<div id="messages"></div>
 
 <script type="text/javascript">
   let url = "ws://" + window.location.host.toString() + "/ws/socket-server/";
 
   const chatSocket = new WebSocket(url);
-  
-  chatSocket.onmessage = function(e){
+
+  chatSocket.onmessage = function (e) {
     let data = JSON.parse(e.data);
-    console.log('Data: ', data);
+    console.log("Data: ", data);
 
-    if (data.type === 'chat'){
-      let messages = document.getElementById('messages')
+    if (data.type === "chat") {
+      let messages = document.getElementById("messages");
 
-      messages.insertAdjacentHTML('beforeend',
-       `<div>
-      <p>${data.message}</p>  
-      </div>`
-        )
+      document.getElementById("text-area").textContent = data.message;
     }
   };
 
-  let form = document.getElementById('form')
-  form.addEventListener('submit', (e)=>{
-    e.preventDefault()
-
-    let message = e.target.message.value
-
-    chatSocket.send(JSON.stringify({
-      'message': message
-    }))
-
-    form.reset();
-    
-  })
-  
+  let input = document.querySelector('textarea[name="message"]');
+  input.addEventListener("input", (e) => {
+    let message = e.target.value;
+    chatSocket.send(
+      JSON.stringify({
+        message: message,
+      })
+    );
+  });
 </script>
-
 {% endblock %}
