@@ -18,11 +18,19 @@
     console.log("Data: ", data);
 
     if (data.type === "chat") {
+      
       let messages = document.getElementById("messages");
 
       document.getElementById("text-area").textContent = data.message;
+      
+    } else if (data.type === "input_response") {
+
+      let resultForm = document.getElementById("result-form");
+      
+      resultForm.value = data.message;
     }
   };
+
 
   let input = document.querySelector('textarea[name="message"]');
 
