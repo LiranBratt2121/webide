@@ -25,13 +25,53 @@
   };
 
   let input = document.querySelector('textarea[name="message"]');
+
   input.addEventListener("input", (e) => {
     let message = e.target.value;
+
     chatSocket.send(
       JSON.stringify({
         message: message,
       })
     );
   });
+
+  let hasTerminal = false;
+  const form = document.querySelector("#form");
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const resultForm = document.createElement("textarea");
+
+    resultForm.cols = 50;
+    resultForm.rows = 2;
+    resultForm.id = "result-form";
+
+    if (hasTerminal) {
+      const terminal = document.getElementById("result-form");
+
+      terminal.remove();
+    }
+
+    content = document.getElementById("text-area").textContent;
+
+    resultForm.textContent = content;
+
+    form.appendChild(resultForm);
+
+    hasTerminal = true;
+    
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && e.key === "j") {
+      const terminal = document.getElementById("result-form");
+
+      terminal.remove();
+
+      hasTerminal = false;
+    }
+  });
 </script>
+
 {% endblock %}
