@@ -45,7 +45,9 @@
   });
 
   let hasTerminal = false;
+
   const form = document.querySelector("#form");
+
   form.addEventListener("submit", (e) => {
     e.preventDefault();
 
@@ -61,14 +63,19 @@
       terminal.remove();
     }
 
-    content = document.getElementById("text-area").textContent;
+    const content = input.value;
 
-    resultForm.textContent = content;
 
+    chatSocket.send(
+      JSON.stringify({
+        content: content,
+      })
+    );
+    
     form.appendChild(resultForm);
 
     hasTerminal = true;
-    
+
   });
 
   document.addEventListener("keydown", (e) => {
@@ -80,6 +87,7 @@
       hasTerminal = false;
     }
   });
+
 </script>
 
 {% endblock %}
