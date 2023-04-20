@@ -1,85 +1,77 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %} 
+{% block content %}
+  <h1>Hello World!</h1>
 
-<h1>Hello World!</h1>
+  <form id="form">
+    <input type="submit" />
+    <br />
+    <textarea name="message" cols="50" rows="20" id="text-area"></textarea>
+  </form>
 
-<form id="form">
-  <input type="submit" />
-  <br />
-  <textarea name="message" cols="50" rows="20" id="text-area"></textarea>
-</form>
+  <script type="text/javascript">
+    let url = "ws://" + window.location.host.toString() + "/ws/socket-server/";
 
-<script type="text/javascript">
-  let url = "ws://" + window.location.host.toString() + "/ws/socket-server/";
+    const chatSocket = new WebSocket(url);
 
-  const chatSocket = new WebSocket(url);
+    chatSocket.onmessage = function (e) {
+      let data = JSON.parse(e.data);
 
-  chatSocket.onmessage = function (e) {
-    let data = JSON.parse(e.data);
-    console.log("Data: ", data);
+      if (data.type === "chat") {
+        let messages = document.getElementById("messages");
+        document.getElementById("text-area").textContent = data.message;
+      } else if (data.type === "input_response") {
+        let resultForm = document.getElementById("result-form");
+        if (resultForm) {
+          resultForm.value = data.message;
+        } else {
+          const form = document.querySelector("#form");
+          const resultForm = document.createElement("textarea");
+          resultForm.cols = 50;
+          resultForm.rows = 2;
+          resultForm.id = "result-form";
+          resultForm.value = "";
+          resultForm.value = data.message;
+          form.appendChild(resultForm);
+        }
+      }
+    };
 
-    if (data.type === "chat") {
+    let input = document.querySelector('textarea[name="message"]');
+    input.addEventListener("input", (e) => {
+      let message = e.target.value;
+      chatSocket.send(JSON.stringify({ message: message }));
+    });
+
+    let hasTerminal = false;
+
+    const form = document.querySelector("#form");
+    form.addEventListener("submit", (e) => {
+      e.preventDefault(); 
       
-      let messages = document.getElementById("messages");
-
-      document.getElementById("text-area").textContent = data.message;
+      let terminal = document.getElementById("result-form");
       
-    } else if (data.type === "input_response") {
-
-      let resultForm = document.getElementById("result-form");
-      
-      resultForm.value = data.message;
-    }
-  };
-
-
-  let input = document.querySelector('textarea[name="message"]');
-
-  input.addEventListener("input", (e) => {
-    let message = e.target.value;
-
-    chatSocket.send(
-      JSON.stringify({
-        message: message,
-      })
-    );
-  });
-
-  let hasTerminal = false;
-
-  const form = document.querySelector("#form");
-
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-
-    const resultForm = document.createElement("textarea");
-
-    resultForm.cols = 50;
-    resultForm.rows = 2;
-    resultForm.id = "result-form";
-
-    if (hasTerminal) {
+            
+      if (hasTerminal) {
         if (terminal) {
-      terminal.remove();
-    }
+          terminal.remove();
+        }
         hasTerminal = false;
       }
 
-    const content = input.value;
-
+      const content = input.value;
+      
       chatSocket.send(JSON.stringify({ content: content }));
-    hasTerminal = true;
-  });
+      hasTerminal = true;
+    });
 
-  document.addEventListener("keydown", (e) => {
-    if (e.ctrlKey && e.key === "j") {
-      const terminal = document.getElementById("result-form");
-
-      terminal.remove();
-
-      hasTerminal = false;
-    }
-  });
-
-</script>
-
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.key === "j") {
+        const terminal = document.getElementById("result-form");
+        if (terminal) {
+          terminal.remove();
+          hasTerminal = false;
+        }
+      }
+    });
+  </script>
 {% endblock %}
