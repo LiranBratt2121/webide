@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     # Own
     
     'docs',
+    'webide',   
 ]
 
 ASGI_APPLICATION = 'webide.asgi.application'
