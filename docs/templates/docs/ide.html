@@ -58,24 +58,16 @@
     resultForm.id = "result-form";
 
     if (hasTerminal) {
-      const terminal = document.getElementById("result-form");
-
+        if (terminal) {
       terminal.remove();
     }
+        hasTerminal = false;
+      }
 
     const content = input.value;
 
-
-    chatSocket.send(
-      JSON.stringify({
-        content: content,
-      })
-    );
-    
-    form.appendChild(resultForm);
-
+      chatSocket.send(JSON.stringify({ content: content }));
     hasTerminal = true;
-
   });
 
   document.addEventListener("keydown", (e) => {
