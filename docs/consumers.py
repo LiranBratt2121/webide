@@ -12,12 +12,12 @@ class ChatConsumer(WebsocketConsumer):
         self.process = None
         self.thread = None
         self.output = ''
-        
+
         async_to_sync(self.channel_layer.group_add)(
             self.room_group_name,
             self.channel_name
         )
-        
+
         self.accept()
 
     def receive(self, text_data):
@@ -28,7 +28,7 @@ class ChatConsumer(WebsocketConsumer):
             self.send_chat_message(message)
         elif 'content' in text_data_json:
             content = text_data_json['content']
-            if len(content) > 10000:
+            if len(content) > 100000:
                 self.send_input_response_message('Error: Message is too long.')
                 return
             if self.process and self.process.poll() is None:
@@ -48,40 +48,38 @@ class ChatConsumer(WebsocketConsumer):
             self.output = ''
             self.send_input_response_message('')
         elif 'stop' in text_data_json:
-            if self.process and self.process.poll() is None:
-                self.process.kill()
+            if self.thread and self.thread.is_alive():
+                self.process.terminate()
                 self.process = None
                 self.send_input_response_message('Process stopped by user.')
-                self.thread.join()  
+                self.thread.join()
                 self.thread = None
                 self.output = ''
 
-
     def run_code(self, content):
-        self.process = subprocess.Popen(['python', '-c', content], stdout=subprocess.PIPE)
-        self.thread = threading.Thread(target=self._output_reader)
+        self.thread = threading.Thread(target=self._run_code_thread, args=(content,))
         self.thread.start()
 
-    def _output_reader(self):
+    def _run_code_thread(self, content):
+        self.process = subprocess.Popen(['python', '-c', content], stdout=subprocess.PIPE)
         for line in iter(self.process.stdout.readline, b''):
             self.output += line.decode()
-            if len(self.output) > 10000:
+            if len(self.output) > 100000:
                 self.send_input_response_message('Error: Output is too long.')
-                self.process.kill()
+                self.process.terminate()
                 self.process = None
-                self.send_input_response_message('Process killed due to excessive output.')
-                self.thread.join()  # Join the thread from a different thread
                 self.thread = None
+                self.send_input_response_message('Process killed due to excessive output.')
                 self.output = ''
                 return
             self.send_input_response_message(self.output)
-            
+
         self.thread = None
 
-        self.process.stdout.close()
-        self.process.wait()
-        self.process = None
-
+        if (self.process):
+            self.process.stdout.close()
+            self.process.wait()
+            self.process = None
 
     def send_chat_message(self, message):
         async_to_sync(self.channel_layer.group_send)(
