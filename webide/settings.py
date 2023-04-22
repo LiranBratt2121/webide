@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     
     'docs',
     'webide',   
+    'accounts',
 ]
 
 ASGI_APPLICATION = 'webide.asgi.application'
@@ -70,7 +71,7 @@ ROOT_URLCONF = 'webide.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['accounts/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
