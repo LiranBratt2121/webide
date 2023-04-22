@@ -4,9 +4,12 @@
 
   <form id="form">
     <input type="submit" />
+    <button type="button" id="stop-btn">Stop</button>
+    <button type="button" id="clear-terminal-btn">Clear Terminal</button>
     <br />
     <textarea name="message" cols="50" rows="20" id="text-area"></textarea>
   </form>
+  
 
   <script type="text/javascript">
     let url = "ws://" + window.location.host.toString() + "/ws/socket-server/";
@@ -16,11 +19,11 @@
     chatSocket.onmessage = function (e) {
       let data = JSON.parse(e.data);
 
-      if (data.type === "chat") {
+      if (data.type === "chat_message") {
         let messages = document.getElementById("messages");
-        document.getElementById("text-area").textContent = data.message;
+        document.getElementById("text-area").value = data.message;
       } else if (data.type === "input_response") {
-        let resultForm = document.getElementById("result-form");
+        let resultForm = document.querySelector("#result-form");
         if (resultForm) {
           resultForm.value = data.message;
         } else {
@@ -46,23 +49,37 @@
 
     const form = document.querySelector("#form");
     form.addEventListener("submit", (e) => {
-      e.preventDefault(); 
-      
+      e.preventDefault();
+    
       let terminal = document.getElementById("result-form");
-      
-            
+    
       if (hasTerminal) {
         if (terminal) {
-          terminal.remove();
+          terminal.value = "";
         }
-        hasTerminal = false;
       }
-
+    
       const content = input.value;
-      
+    
       chatSocket.send(JSON.stringify({ content: content }));
       hasTerminal = true;
     });
+    
+
+    let stopBtn = document.getElementById("stop-btn");
+    let clearTerminalBtn = document.getElementById("clear-terminal-btn");
+
+    stopBtn.addEventListener("click", (e) => {
+      chatSocket.send(JSON.stringify({ stop: true }));
+    });
+
+    clearTerminalBtn.addEventListener("click", (e) => {
+      let terminal = document.getElementById("result-form");
+      if (terminal) {
+        terminal.value = "";
+      }
+    });
+
 
     document.addEventListener("keydown", (e) => {
       if (e.ctrlKey && e.key === "j") {
