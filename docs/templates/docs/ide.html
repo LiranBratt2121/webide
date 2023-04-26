@@ -9,11 +9,14 @@
     <br />
     <textarea name="message" cols="50" rows="20" id="text-area"></textarea>
   </form>
+  <button type="button" id="share-link-btn">Share Invite Link</button>
   
   {{ project.slug|json_script:"json-projectname" }}
 
   <script type="text/javascript">
-    let url = "ws://" + window.location.host.toString() + "/ws/socket-server/";
+    const roomName = JSON.parse(document.getElementById('json-projectname').textContent); 
+
+    let url = "ws://" + window.location.host.toString() + "/ws/" + roomName + "/"
 
     const chatSocket = new WebSocket(url);
 
@@ -40,6 +43,18 @@
       }
     };
 
+  const shareLinkBtn = document.getElementById("share-link-btn");
+
+  shareLinkBtn.addEventListener("click", () => {
+  const inviteLink = `${window.location.href}`;
+  navigator.clipboard.writeText(inviteLink)
+    .then(() => {
+      alert(`Invite link copied to clipboard: ${inviteLink}`);
+    })
+    .catch((error) => {
+      console.error(`Failed to copy invite link: ${error}`);
+    });
+});
     let input = document.querySelector('textarea[name="message"]');
     input.addEventListener("input", (e) => {
       let message = e.target.value;
