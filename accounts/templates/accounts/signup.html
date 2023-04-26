@@ -1,0 +1,42 @@
+{% extends 'base.html' %} 
+<head>
+    {% load static %}
+</head>
+
+{% block content %}
+
+{% for message in messages %}
+<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert"></div>
+<strong>Message</strong> {{ message.messages }}
+<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+<span aria-hidden="true">&times;</span>
+</button>
+
+{% endfor %}
+
+<h1>Sign Up</h1>
+
+<form method="post" action=".">
+    {% csrf_token %}
+    
+    <label for="username">Username</label>
+    <input type="text" name="username">
+    <br>
+    <label for="password1">Password</label>
+    <input type="password" name="password1">
+    <br>
+    <label for="password2">Repeat Password</label>
+    <input type="password" name="password2">
+    
+    {% if form.errors %}
+        {% for field in form %}
+           {% for error in field.errors %}
+                <p>{{ error|escape}}</p> 
+            {% endfor %}
+        {% endfor %}
+    {% endif %}                
+
+    <button>Submit</button>
+</form>
+
+{% endblock %} 
