@@ -1,0 +1,16 @@
+{% extends 'base.html' %} 
+{% block content %}
+<form method="POST">
+    {% csrf_token %}
+    <label for="name">Project name:</label>
+    <input type="text" id="name" name="project_name" required>
+    <br>
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required>
+    <br>
+    <input type="submit" value="Create project">
+</form>
+{% if form.errors %}
+    <p>There were errors in your submission. Please correct them and try again.</p>
+{% endif %}
+{% endblock %}
