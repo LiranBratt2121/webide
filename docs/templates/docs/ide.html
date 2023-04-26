@@ -10,6 +10,7 @@
     <textarea name="message" cols="50" rows="20" id="text-area"></textarea>
   </form>
   
+  {{ project.slug|json_script:"json-projectname" }}
 
   <script type="text/javascript">
     let url = "ws://" + window.location.host.toString() + "/ws/socket-server/";
