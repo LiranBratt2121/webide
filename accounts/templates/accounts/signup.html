@@ -1,42 +1,70 @@
-{% extends 'base.html' %} 
-<head>
-    {% load static %}
-</head>
+{% extends 'base.html' %}
 
 {% block content %}
 
 {% for message in messages %}
-<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert"></div>
-<strong>Message</strong> {{ message.messages }}
-<button type="button" class="close" data-dismiss="alert" aria-label="Close">
-<span aria-hidden="true">&times;</span>
-</button>
-
+<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+  <strong>Message:</strong> {{ message }}
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
 {% endfor %}
 
-<h1>Sign Up</h1>
+<div class="container my-5 py-4 rounded border" style="background-color: #292b2e;">
+  <div class="text-center">
+    <h3 class="text-white">Sign up for Webide</h3>
+  </div>
 
-<form method="post" action=".">
+  <form class="my-4" method="post" action=".">
     {% csrf_token %}
-    
-    <label for="username">Username</label>
-    <input type="text" name="username">
-    <br>
-    <label for="password1">Password</label>
-    <input type="password" name="password1">
-    <br>
-    <label for="password2">Repeat Password</label>
-    <input type="password" name="password2">
-    
+
+    <div class="form-group">
+      <label for="username" class="text-white">Username</label>
+      <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" required>
+    </div>
+
+    <div class="form-group">
+      <label for="password1" class="text-white">Password</label>
+      <input type="password" class="form-control" id="password1" name="password1" placeholder="Password" required>
+    </div>
+
+    <div class="form-group">
+      <label for="password2" class="text-white">Confirm Password</label>
+      <input type="password" class="form-control" id="password2" name="password2" placeholder="Confirm password" required>
+    </div>
+
     {% if form.errors %}
-        {% for field in form %}
-           {% for error in field.errors %}
-                <p>{{ error|escape}}</p> 
-            {% endfor %}
-        {% endfor %}
-    {% endif %}                
+    <div class="alert alert-danger">
+      {% for field in form %}
+      {% for error in field.errors %}
+      <p>{{ error|escape }}</p>
+      {% endfor %}
+      {% endfor %}
+    </div>
+    {% endif %}
 
-    <button>Submit</button>
-</form>
+    <button type="submit" class="btn btn-primary">Sign up</button>
+  </form>
 
-{% endblock %} 
+  <div class="text-center">
+    <p class="text-white">Already have an account? <a href="/login/" class="text-warning">Login here</a></p>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script>
+  const password1 = document.querySelector('#password1');
+  const password2 = document.querySelector('#password2');
+
+  password2.addEventListener('input', () => {
+    if (password1.value !== password2.value) {
+      password2.setCustomValidity('Passwords must match');
+    } else {
+      password2.setCustomValidity('');
+    }
+  });
+</script>
+{% endblock %}

@@ -1,13 +1,45 @@
-{% extends 'base.html' %} 
+{% extends 'base.html' %}
+
+{% block head %}
+<style>
+    .card-title, .card-text, p  {
+        color: #333;
+      }
+</style>
+{% endblock head %}
+
 
 {% block content %}
+<div class="container">
+  <h1 class="my-5 text-center">View Projects</h1>
 
-<h1>View Projects</h1>
-
-{% for project in projects %}
-<h2> {{  project.name  }} </h2>
-<a href="{% url 'project_ide' project.slug %}">Join</a><br><br>
-{% endfor %}
-
+  {% if projects %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      {% for project in projects %}
+        <div class="col">
+          <div class="card h-100 shadow">
+            <div class="card-body">
+              <h5 class="card-title">{{ project.name }}</h5>
+              <p class="card-text">{{ project.description }}</p>
+            </div>
+            <div class="card-footer">
+              {% url 'project_ide' project.slug as project_url %}
+              {% if project_url %}
+                <a href="{{ project_url }}" class="btn btn-primary w-100">Join Room</a>
+              {% else %}
+                <p>Joining this project is currently unavailable.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center">
+      <h2>No Projects</h2>
+      <p class="lead">You don't have any projects yet.</p>
+      <a href="{% url 'create_project' %}" class="btn btn-primary">Create a Project</a>
+    </div>
+  {% endif %}
+</div>
 {% endblock %}
-    
