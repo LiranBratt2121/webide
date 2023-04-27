@@ -5,9 +5,9 @@ from . import consumers
 
 urlpatterns = [
     path('ide/', views.ide),
-    path('<slug:slug>/', views.project_ide, name='project_ide'),
+    path('view_projects/', views.view_projects),
     path('create/', views.create_project),
-    path('views_projects', views.view_projects)
+    path('<slug:slug>/', views.project_ide, name='project_ide'),
 ]
 
 websocket_urlpatterns = [
