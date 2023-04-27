@@ -1,15 +1,133 @@
 {% extends 'base.html' %} 
-{% block content %}
-  <h1>Hello World!</h1>
+{% block head %}
+<!-- CodeMirror CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/addon/hint/show-hint.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/theme/material-darker.min.css">
 
-  <form id="form">
-    <input type="submit" />
-    <button type="button" id="stop-btn">Stop</button>
-    <button type="button" id="clear-terminal-btn">Clear Terminal</button>
-    <br />
-    <textarea name="message" cols="50" rows="20" id="text-area"></textarea>
-  </form>
-  <button type="button" id="share-link-btn">Share Invite Link</button>
+<!-- CodeMirror JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/addon/hint/show-hint.min.js"></script>
+
+
+<!-- CodeMirror CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/addon/hint/show-hint.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/addon/fold/foldgutter.min.css">
+
+<!-- CodeMirror JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/addon/hint/show-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/addon/fold/foldcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/addon/fold/foldgutter.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/addon/fold/brace-fold.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/addon/fold/comment-fold.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/addon/fold/indent-fold.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/addon/fold/xml-fold.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/addon/fold/markdown-fold.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/addon/fold/markdown-fold.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/codemirror@5.63.2/addon/hint/show-hint.min.js"></script>
+{% endblock head %}
+
+{% block content %}
+<h1 class="text-center mb-5">Webide Python Interpreter</h1>
+
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body">
+          <form id="form">
+            <div class="form-group mb-3">
+              <textarea name="message" cols="50" rows="20" id="text-area" class="form-control"></textarea>
+            </div>
+            <div class="btn-group mb-3" role="group">
+              <button type="submit" id="run-btn" class="btn btn-primary btn-lg mr-2">Run</button>
+              <button type="button" id="stop-btn" class="btn btn-danger mr-2">Stop</button>
+              <button type="button" id="clear-terminal-btn" class="btn btn-secondary mr-2">Clear Terminal</button>
+              <button type="button" id="share-link-btn" class="btn btn-info">Share Invite Link</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function snippet(cm, pos, snippet) {
+    const cursor = cm.getCursor();
+    const line = cm.getLine(cursor.line);
+    const start = snippet.start || 0;
+    const end = snippet.end || 0;
+    const text = snippet.text || "";
+    const replaceText = text.substring(start, text.length - end);
+    
+    // Insert snippet text into textarea
+    const textarea = document.getElementById("text-area");
+    const currentText = textarea.value;
+    const newText = currentText.slice(0, textarea.selectionStart) + replaceText + currentText.slice(textarea.selectionEnd);
+    textarea.value = newText;
+    
+    // Set cursor position
+    textarea.selectionStart = textarea.selectionEnd = textarea.selectionStart + replaceText.length;
+  }
+  
+    function showHint(cm) {
+    CodeMirror.commands.autocomplete(cm, null, {hintOptions: {hint: CodeMirror.hint.python}});
+  }
+  
+  const editor = CodeMirror.fromTextArea(document.getElementById("text-area"), {
+    mode: "python",
+    lineNumbers: true,
+    theme: "material-darker",
+    extraKeys: {
+      "Ctrl-Space": "autocomplete",
+      "Tab": function(cm) {
+        if (cm.somethingSelected()) {
+          return CodeMirror.Pass;
+        }
+        const cursor = cm.getCursor();
+        const line = cm.getLine(cursor.line);
+        const start = cursor.ch;
+        let curWord = "";
+        while (start && /\w/.test(line.charAt(start - 1))) {
+          --start;
+        }
+        curWord = line.slice(start, cursor.ch);
+        const token = cm.getTokenAt(cursor);
+        const stringStart = token.string.toLowerCase().lastIndexOf(curWord.toLowerCase());
+        const stringEnd = stringStart + curWord.length;
+        const suggestions = [];
+        for (let i = 0; i < snippets.length; i++) {
+          if (snippets[i].text.startsWith(curWord)) {
+            suggestions.push(snippets[i]);
+          }
+        }
+        if (suggestions.length > 0) {
+          cm.showHint({
+            completeSingle: false,
+            alignWithWord: true,
+            hint: function(cm, options) {
+              const list = suggestions.map((s) => ({text: s.text, displayText: s.displayText}));
+              return {
+                list: list,
+                from: CodeMirror.Pos(cursor.line, start),
+                to: CodeMirror.Pos(cursor.line, stringEnd)
+              };
+            },
+            complete: function(cm, data, options) {
+              snippet(cm, data.from, data.list[data.selected]);
+            }
+          });
+        }
+      }
+    }
+  });
+  </script>
+
   
   {{ project.slug|json_script:"json-projectname" }}
 
