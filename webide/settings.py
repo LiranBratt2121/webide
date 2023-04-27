@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from django.urls import reverse_lazy
+from django.contrib.auth.decorators import login_required
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,6 +28,8 @@ SECRET_KEY = 'django-insecure-n$wr@t2bos18^ulk)#^t3^%=@63jji8&y*i4s5kqtmkrync+)w
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+LOGIN_URL = reverse_lazy('login')
 
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_REDIRECT_URL = '/home/'
