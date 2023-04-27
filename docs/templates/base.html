@@ -4,9 +4,68 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>{% block title %}{% endblock title %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<style>
+  /* Dark theme */
+  body {
+    background-color: #202226;
+    color: #fff;
+  }
+  /* Override bootstrap's default link color */
+  a {
+    color: #fff;
+  }
+  /* Navbar */
+  .navbar {
+    background-color: #292b2e;
+  }
+  .navbar-brand {
+    color: #fff;
+  }
+  .navbar-nav .nav-link {
+    color: #fff;
+  }
+  .navbar-nav .nav-link:hover {
+    color: #f8f9fa;
+  }
+</style>
+  {% block head %}{% endblock head %}
   </head>
   <body>
-    {% block content %} {% endblock content %}
-  </body>
-</html>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <a class="navbar-brand" href="#">Webide</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item active">
+            <a class="nav-link" href="/home/">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/docs/create/">Create a Project</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/docs/view_projects/">View Projects</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/login/">Log In</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/signup/">Sign Up</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+<div class="container">
+  {% block content %}{% endblock content %}
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.min.js"crossorigin="anonymous"></script>
