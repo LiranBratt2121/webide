@@ -144,7 +144,7 @@
       if (data.type === "chat_message") {
         let messages = document.getElementById("messages");
         document.getElementById("text-area").value = data.message;
-      } else if (data.type === "input_response") {
+      } else if (data.type === "input_response_message") {
         let resultForm = document.querySelector("#result-form");
         if (resultForm) {
           resultForm.value = data.message;

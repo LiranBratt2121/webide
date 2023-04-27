@@ -24,7 +24,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         if 'message' in text_data_json:
             message = text_data_json['message']
-            await self.send_chat_message(message)
+            await self.chat_message(message)
         elif 'content' in text_data_json:
             content = text_data_json['content']
             if len(content) > 100000:
@@ -81,25 +81,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.process.wait()
             self.process = None
 
-    async def send_chat_message(self, message):
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'message': message
-            }
-        )
 
-    async def send_input_response_message(self, message):
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'input_response',
-                'message': message
-            }
-        )
-
-    async def chat_message(self, event):
+    async def chat_message(self, event): # Used
         message = event['message']
         await self.send(text_data=json.dumps({
             'type': 'chat_message',
@@ -107,7 +90,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
 
-    async def send_input_response_message(self, input_response):
+    async def send_input_response_message(self, input_response): # Used
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -116,16 +99,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }
         )
         
-        
-    async def input_response(self, event):
-        message = event['message']
-        await self.send(text_data=json.dumps({
-            'type': 'input_response',
-            'message': message
-        }))
 
-
-    async def input_response_message(self, event):
+    async def input_response_message(self, event): # Not used
         input_response = event['message'] 
         await self.send(text_data=json.dumps({
             'type': 'input_response',
