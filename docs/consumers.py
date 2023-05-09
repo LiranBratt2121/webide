@@ -57,8 +57,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def run_code(self, content):
         self.send_input_response_message('bro code;')
-        # self.thread = threading.Thread(target=self._run_code_thread, args=(content,))
-        # self.thread.start()
+        self.thread = threading.Thread(target=self._run_code_thread, args=(content,))
+        self.thread.start()
 
     def _run_code_thread(self, content):
         self.process = subprocess.Popen(['python', '-c', content], stdout=subprocess.PIPE)
@@ -83,7 +83,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
     async def chat_message(self, event): # Used
-        message = event['message']
+        message = event
         await self.send(text_data=json.dumps({
             'type': 'chat_message',
             'message': message
@@ -98,11 +98,4 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'message': input_response
             }
         )
-        
 
-    async def input_response_message(self, event): # Not used
-        input_response = event['message'] 
-        await self.send(text_data=json.dumps({
-            'type': 'input_response',
-            'message': input_response 
-        }))
