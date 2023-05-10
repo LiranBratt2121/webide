@@ -1,14 +1,14 @@
 import json
 import subprocess
 import threading
-
+from random import randint
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.slug = self.scope['url_route']['kwargs']['slug']
-        self.room_group_name = 'chat_%s' % self.slug   
+        self.room_group_name = 'chat_%s' % self.slug
         self.process = None
         self.thread = None
         self.output = ''
@@ -24,7 +24,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         if 'message' in text_data_json:
             message = text_data_json['message']
-            await self.chat_message(message)
+            await self.send_chat_message(message)
         elif 'content' in text_data_json:
             content = text_data_json['content']
             if len(content) > 100000:
@@ -82,15 +82,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.process = None
 
 
-    async def chat_message(self, event): # Used
-        message = event
-        await self.send(text_data=json.dumps({
-            'type': 'chat_message',
-            'message': message
-        }))
+    # async def chat_message(self, message): # Used
+    #     await self.send(text_data=json.dumps({
+    #         'type': 'chat_message',
+    #         'message': message
+    #     }))
+        
 
-
-    async def send_input_response_message(self, input_response): # Used
+    async def send_input_response_message(self, input_response):
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -98,4 +97,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'message': input_response
             }
         )
+        
+    async def send_chat_message(self, message):
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'chat_message',
+                'message': message
+            }
+        )
 
+    async def chat_message(self, event):
+        message = event['message']
+
+        # Send message to WebSocket
+        await self.send(text_data=json.dumps({
+            'type': 'chat_message',
+            'message': message
+        }))
