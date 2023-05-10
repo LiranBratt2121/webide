@@ -43,22 +43,27 @@
 
       if (data.type === "chat_message") {
         document.getElementById("text-area").value = data.message;
-      } else if (data.type === "input_response_message") {
-        let resultForm = document.querySelector("#result-form");
-        if (resultForm) {
-          resultForm.value = data.message;
-        } else {
-          const form = document.querySelector("#form");
-          const resultForm = document.createElement("textarea");
+        
+      } else if (data.type === "update_terminal") {
+        let resultForm = document.getElementById("result-form");
+
+        if (!resultForm) {
+          resultForm = document.createElement("textarea");
           resultForm.cols = 50;
           resultForm.rows = 2;
           resultForm.id = "result-form";
-          resultForm.value = "";
-          resultForm.value = data.message;
+
+          const form = document.querySelector("#form");
+
+          resultForm.value = data.message.message;
+          
           form.appendChild(resultForm);
+        }else{
+          resultForm.value = data.message.message;
         }
       }
-    };
+  }
+    
 
   const shareLinkBtn = document.getElementById("share-link-btn");
 
@@ -85,7 +90,7 @@
       e.preventDefault();
     
       let terminal = document.getElementById("result-form");
-    
+      
       if (hasTerminal) {
         if (terminal) {
           terminal.value = "";
@@ -103,24 +108,13 @@
     let clearTerminalBtn = document.getElementById("clear-terminal-btn");
 
     stopBtn.addEventListener("click", (e) => {
-      chatSocket.send(JSON.stringify({ stop: true }));
+      chatSocket.send(JSON.stringify({ 'stop': true }));
     });
 
     clearTerminalBtn.addEventListener("click", (e) => {
       let terminal = document.getElementById("result-form");
       if (terminal) {
         terminal.value = "";
-      }
-    });
-
-
-    document.addEventListener("keydown", (e) => {
-      if (e.ctrlKey && e.key === "j") {
-        const terminal = document.getElementById("result-form");
-        if (terminal) {
-          terminal.remove();
-          hasTerminal = false;
-        }
       }
     });
   </script>
