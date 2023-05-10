@@ -44,24 +44,34 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+
     # 3d party
     'channels',
-    
+
     # Own
-    
+
     'docs',
-    'webide',   
+    'webide',
     'accounts',
 ]
 
 ASGI_APPLICATION = 'webide.asgi.application'
 
+
 CHANNEL_LAYERS = {
-    'default':{
-        'BACKEND':'channels.layers.InMemoryChannelLayer'
+    'default': {
+    'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        'CONFIG': {
+            'expiry': 3600,
+            'group_expiry': 86400,
+            'capacity': 1000,
+            'channel_capacity': {
+                'chat_message': 100,
+            },
+        },
+    },
+
 }
-    }
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
