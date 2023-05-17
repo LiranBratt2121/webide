@@ -1,5 +1,9 @@
 {% extends 'base.html' %} 
 {% block head %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/theme/dracula.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/python/python.min.js"></script>
 {% endblock head %}
 
 {% block content %}
@@ -38,12 +42,41 @@
 
     const chatSocket = new WebSocket(url);
 
+
+    var editor = CodeMirror.fromTextArea(document.getElementById("text-area"), {
+      lineNumbers: true,
+      mode: "python",
+      theme: "dracula"
+    });
+    
+    let previous = editor.getValue();
+    
+    editor.on("change", function (instance) {
+      let message = instance.getValue();
+    
+      if (message !== previous) {
+        chatSocket.send(
+          JSON.stringify({ 
+            type: "chat_message",
+            message: message 
+            })
+        );
+        
+        previous = message;
+      }
+    });
+
     chatSocket.onmessage = function (e) {
       let data = JSON.parse(e.data);
 
       if (data.type === "chat_message") {
-        document.getElementById("text-area").value = data.message;
-        
+      let cursor = editor.getCursor();
+      let scrollInfo = editor.getScrollInfo();
+
+      editor.setValue(data.message);
+
+      editor.setCursor(cursor);
+      editor.scrollTo(scrollInfo.left, scrollInfo.top);
       } else if (data.type === "update_terminal") {
         let resultForm = document.getElementById("result-form");
 
