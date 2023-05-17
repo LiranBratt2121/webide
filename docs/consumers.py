@@ -1,8 +1,10 @@
 import asyncio
 import json
 import subprocess
-import threading
+from django.core.exceptions import ObjectDoesNotExist
+from .models import Room
 from channels.generic.websocket import AsyncWebsocketConsumer
+from asgiref.sync import sync_to_async
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -19,6 +21,27 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
         await self.accept()
 
+        # Update the textarea content when a user joins the room
+        await self.update_textarea_content()
+
+    async def disconnect(self, close_code):
+        # Update the textarea content when a user leaves the room
+        await self.update_textarea_content()
+
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
+        )
+
+    async def update_textarea_content(self):
+        room = await sync_to_async(Room.objects.get)(slug=self.slug)
+        content = room.content
+
+        await self.send(text_data=json.dumps({
+            'type': 'update_textarea',
+            'content': content
+        }))
+
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
 
@@ -31,6 +54,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             if len(content) > 100000:
                 await self.group_send_input_response_message('Error: Message is too long.')
                 return
+            try:
+                room = await sync_to_async(Room.objects.get)(slug=self.slug)
+                room.description = content
+                await sync_to_async(room.save)()
+            except ObjectDoesNotExist:
+                pass
+
             if self.process and self.process.poll() is None:
                 await self.group_send_input_response_message('Code is already running. Please wait for it to finish before submitting new code.')
             else:
@@ -52,7 +82,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.process.terminate()
             await self.group_send_input_response_message('Process stopped by user.')
 
-
     async def _run_code_thread(self, content):
         print('In Run code Thread!')
         self.process = subprocess.Popen(['python', '-c', content], stdout=subprocess.PIPE)
@@ -70,7 +99,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         self.thread = None
 
-        if (self.process):
+        if self.process:
             self.process.stdout.close()
             self.process.wait()
             self.process = None
@@ -81,7 +110,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         print('Started Thread')
         await asyncio.create_task(coro)
 
-
     # Update terminal functions
     async def input_response_message(self, event):
         input_response = event
@@ -90,7 +118,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'type': 'update_terminal',
             'message': input_response
         }))
-        
 
     async def group_send_input_response_message(self, message):
         event = message
@@ -102,7 +129,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }
         )
 
-        
     # Update text-area functions
     async def chat_message(self, event):
         message = event['message']
