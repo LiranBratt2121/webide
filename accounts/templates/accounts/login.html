@@ -14,21 +14,67 @@
 </div>
 {% endfor %}
 
-<h1>login :D</h1>
+<div class="container my-5 py-4 rounded border" style="background-color: #292b2e;">
+  <div class="text-center">
+    <h3 class="text-white">Login to Webide</h3>
 
-<form method="post">
-{% csrf_token %}
-
-<label for="">Username or Email</label>
-<input type="text" id="username" name="username" placeholder="Bratt-Liran" required>
-<br>
-
-<label for="">Password</label>
-<input type="password" id="password" name="password" placeholder="CoolPassword12@" required>
-<br>
+  </div>
+  <form class="my-4" method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="username" class="text-white">Username or Email</label>
+      <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" required>
+    </div>
+    <div class="form-group">
+      <label for="password" class="text-white">Password</label>
+      <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+    </div>
+    <div class="form-group form-check">
+      <input type="checkbox" class="form-check-input" id="remember-me" name="remember_me">
+      <label class="form-check-label text-white" for="remember-me">Remember me</label>
+    </div>
+    <button type="submit" class="btn btn-primary">Login</button>
+  </form>
   
-<button type="submit">Sign In</button>
+  {% if form.errors %}
+  <div class="alert alert-danger" role="alert">
+    {% for field in form %}
+      {% for error in field.errors %}
+        <p>{{ error|escape }}</p>
+      {% endfor %}
+    {% endfor %}
+  </div>
+  {% endif %}
+  <div class="text-center">
+    <p class="text-white">Don't have an account? <a href="/signup/" class="text-warning">Sign up here</a></p>
+  </div>
+</div>
 
-</form>   
+{% endblock %}
 
+{% block javascript %}
+<script>
+// Get the remember me checkbox
+const rememberMeCheckbox = document.querySelector('#remember-me');
+
+// Check if the remember me cookie exists
+const rememberMeCookie = document.cookie.match(/remember_me=(\d)/);
+
+// If the cookie exists, set the checkbox to checked
+if (rememberMeCookie && rememberMeCookie[1] === '1') {
+  rememberMeCheckbox.checked = true;
+}
+
+// Add an event listener to the login form
+const loginForm = document.querySelector('form');
+loginForm.addEventListener('submit', (event) => {
+  // If the remember me checkbox is checked, set a cookie to remember the user
+  if (rememberMeCheckbox.checked) {
+    document.cookie = 'remember_me=1; max-age=604800; path=/';
+  } else {
+    // Otherwise, delete the remember me cookie
+    document.cookie = 'remember_me=0; max-age=0; path=/';
+  }
+});
+</script>
 {% endblock %}
