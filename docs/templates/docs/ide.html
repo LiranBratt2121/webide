@@ -14,9 +14,10 @@
     <div class="col-md-6">
       <div class="card">
         <div class="card-body">
-          <form id="form">
+          <form id="form" method="POST" action="">
+            {% csrf_token %}
             <div class="form-group mb-3">
-              <textarea name="message" cols="50" rows="20" id="text-area" class="form-control"></textarea>
+              <textarea name="message" cols="50" rows="20" id="text-area" class="form-control">{{ project.content }}</textarea>
             </div>
             <div class="btn-group mb-3" role="group">
               <button type="submit" id="run-btn" class="btn btn-primary btn-lg mr-2">Run</button>
@@ -24,6 +25,8 @@
               <button type="button" id="clear-terminal-btn" class="btn btn-secondary mr-2">Clear Terminal</button>
               <button type="button" id="share-link-btn" class="btn btn-info">Share Invite Link</button>
             </div>
+
+            <input type="hidden" id="project-id" value="{{ project.id }}">
           </form>
         </div>
       </div>
@@ -66,6 +69,16 @@
       }
     });
 
+    const roomId = document.getElementById('project-id').value;
+
+    // Send a message to the server to join the room
+    chatSocket.onopen = function (e) {
+      chatSocket.send(JSON.stringify({
+        'command': 'join',
+        'room_id': roomId
+      }));
+    };
+
     chatSocket.onmessage = function (e) {
       let data = JSON.parse(e.data);
 
@@ -95,8 +108,18 @@
         }else{
           resultForm.value = data.message.message;
         }
+      }  else if (data.type === 'update_textarea') {
+        const content = data['content'];
+        editor.setValue(content);
       }
   }
+
+  chatSocket.onclose = function (e) {
+    chatSocket.send(JSON.stringify({
+      'command': 'leave',
+      'room_id': roomId
+    }));
+  };
     
 
   const shareLinkBtn = document.getElementById("share-link-btn");
