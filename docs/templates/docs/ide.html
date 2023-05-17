@@ -1,44 +1,116 @@
 {% extends 'base.html' %} 
-{% block content %}
-  <h1>Hello World!</h1>
+{% block head %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/theme/dracula.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/python/python.min.js"></script>
+{% endblock head %}
 
-  <form id="form">
-    <input type="submit" />
-    <button type="button" id="stop-btn">Stop</button>
-    <button type="button" id="clear-terminal-btn">Clear Terminal</button>
-    <br />
-    <textarea name="message" cols="50" rows="20" id="text-area"></textarea>
-  </form>
+{% block content %}
+<h1 class="text-center mb-5">Webide Python Interpreter</h1>
+
+<div class="container-fluid">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body">
+          <form id="form">
+            <div class="form-group mb-3">
+              <textarea name="message" cols="50" rows="20" id="text-area" class="form-control"></textarea>
+            </div>
+            <div class="btn-group mb-3" role="group">
+              <button type="submit" id="run-btn" class="btn btn-primary btn-lg mr-2">Run</button>
+              <button type="button" id="stop-btn" class="btn btn-danger mr-2">Stop</button>
+              <button type="button" id="clear-terminal-btn" class="btn btn-secondary mr-2">Clear Terminal</button>
+              <button type="button" id="share-link-btn" class="btn btn-info">Share Invite Link</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
   
+  {{ project.slug|json_script:"json-projectname" }}
 
   <script type="text/javascript">
-    let url = "ws://" + window.location.host.toString() + "/ws/socket-server/";
+    const roomName = JSON.parse(document.getElementById('json-projectname').textContent); 
+
+    let url = "ws://" + window.location.host.toString() + "/ws/" + roomName + "/"
 
     const chatSocket = new WebSocket(url);
+
+
+    var editor = CodeMirror.fromTextArea(document.getElementById("text-area"), {
+      lineNumbers: true,
+      mode: "python",
+      theme: "dracula"
+    });
+    
+    let previous = editor.getValue();
+    
+    editor.on("change", function (instance) {
+      let message = instance.getValue();
+    
+      if (message !== previous) {
+        chatSocket.send(
+          JSON.stringify({ 
+            type: "chat_message",
+            message: message 
+            })
+        );
+        
+        previous = message;
+      }
+    });
 
     chatSocket.onmessage = function (e) {
       let data = JSON.parse(e.data);
 
       if (data.type === "chat_message") {
-        let messages = document.getElementById("messages");
-        document.getElementById("text-area").value = data.message;
-      } else if (data.type === "input_response") {
-        let resultForm = document.querySelector("#result-form");
-        if (resultForm) {
-          resultForm.value = data.message;
-        } else {
-          const form = document.querySelector("#form");
-          const resultForm = document.createElement("textarea");
+      let cursor = editor.getCursor();
+      let scrollInfo = editor.getScrollInfo();
+
+      editor.setValue(data.message);
+
+      editor.setCursor(cursor);
+      editor.scrollTo(scrollInfo.left, scrollInfo.top);
+      } else if (data.type === "update_terminal") {
+        let resultForm = document.getElementById("result-form");
+
+        if (!resultForm) {
+          resultForm = document.createElement("textarea");
           resultForm.cols = 50;
           resultForm.rows = 2;
           resultForm.id = "result-form";
-          resultForm.value = "";
-          resultForm.value = data.message;
+          resultForm.classList.add("form-control");
+
+          const form = document.querySelector("#form");
+
+          resultForm.value = data.message.message;
+          
           form.appendChild(resultForm);
+        }else{
+          resultForm.value = data.message.message;
         }
       }
-    };
+  }
+    
 
+  const shareLinkBtn = document.getElementById("share-link-btn");
+
+  shareLinkBtn.addEventListener("click", () => {
+  const inviteLink = `${window.location.href}`;
+  navigator.clipboard.writeText(inviteLink)
+    .then(() => {
+      alert(`Invite link copied to clipboard: ${inviteLink}`);
+    })
+    .catch((error) => {
+      console.error(`Failed to copy invite link: ${error}`);
+    });
+});
     let input = document.querySelector('textarea[name="message"]');
     input.addEventListener("input", (e) => {
       let message = e.target.value;
@@ -52,7 +124,7 @@
       e.preventDefault();
     
       let terminal = document.getElementById("result-form");
-    
+      
       if (hasTerminal) {
         if (terminal) {
           terminal.value = "";
@@ -70,24 +142,13 @@
     let clearTerminalBtn = document.getElementById("clear-terminal-btn");
 
     stopBtn.addEventListener("click", (e) => {
-      chatSocket.send(JSON.stringify({ stop: true }));
+      chatSocket.send(JSON.stringify({ 'stop': true }));
     });
 
     clearTerminalBtn.addEventListener("click", (e) => {
       let terminal = document.getElementById("result-form");
       if (terminal) {
         terminal.value = "";
-      }
-    });
-
-
-    document.addEventListener("keydown", (e) => {
-      if (e.ctrlKey && e.key === "j") {
-        const terminal = document.getElementById("result-form");
-        if (terminal) {
-          terminal.remove();
-          hasTerminal = false;
-        }
       }
     });
   </script>
