@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from django.urls import reverse_lazy
+from django.contrib.auth.decorators import login_required
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,6 +29,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+LOGIN_URL = reverse_lazy('login')
+
+LOGOUT_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/home/'
+LOGOUT_REDIRECT_URL = '/login/'
 
 # Application definition
 
@@ -37,23 +44,34 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+
     # 3d party
     'channels',
-    
+
     # Own
-    
+
     'docs',
-    'webide',   
+    'webide',
+    'accounts',
 ]
 
 ASGI_APPLICATION = 'webide.asgi.application'
 
+
 CHANNEL_LAYERS = {
-    'default':{
-        'BACKEND':'channels.layers.InMemoryChannelLayer'
+    'default': {
+    'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        'CONFIG': {
+            'expiry': 3600,
+            'group_expiry': 86400,
+            'capacity': 1000,
+            'channel_capacity': {
+                'chat_message': 100,
+            },
+        },
+    },
+
 }
-    }
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -70,7 +88,7 @@ ROOT_URLCONF = 'webide.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['accounts/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
