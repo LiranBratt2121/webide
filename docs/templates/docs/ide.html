@@ -54,8 +54,8 @@
     
     let previous = editor.getValue();
     
-    editor.on("change", function (instance) {
-      let message = instance.getValue();
+    editor.on("change", function (e) {
+      let message = e.getValue();
     
       if (message !== previous) {
         chatSocket.send(

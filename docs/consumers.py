@@ -25,9 +25,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.update_textarea_content()
 
     async def disconnect(self, close_code):
-        # Update the textarea content when a user leaves the room
-        await self.update_textarea_content()
-
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
@@ -36,7 +33,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def update_textarea_content(self):
         room = await sync_to_async(Room.objects.get)(slug=self.slug)
         content = room.content
-
+        
         await self.send(text_data=json.dumps({
             'type': 'update_textarea',
             'content': content
@@ -48,6 +45,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if 'message' in text_data_json:
             message = text_data_json['message']
             await self.send_chat_message(message)
+            
+            try:            
+                room = await sync_to_async(Room.objects.get)(slug=self.slug)
+                room.content = message
+                await sync_to_async(room.save)()
+            except ObjectDoesNotExist:
+                pass
+            
         elif 'content' in text_data_json:
             print('In content')
             content = text_data_json['content']
@@ -56,7 +61,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 return
             try:
                 room = await sync_to_async(Room.objects.get)(slug=self.slug)
-                room.description = content
+                room.content = content
                 await sync_to_async(room.save)()
             except ObjectDoesNotExist:
                 pass
