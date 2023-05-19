@@ -58,7 +58,7 @@
 const rememberMeCheckbox = document.querySelector('#remember-me');
 
 // Check if the remember me cookie exists
-const rememberMeCookie = document.cookie.match(/remember_me=(\d)/);
+const rememberMeCookie = document.cookie.match('/remember_me=(\d)/');
 
 // If the cookie exists, set the checkbox to checked
 if (rememberMeCookie && rememberMeCookie[1] === '1') {
