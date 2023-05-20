@@ -151,15 +151,30 @@
   const shareLinkBtn = document.getElementById("share-link-btn");
 
   shareLinkBtn.addEventListener("click", () => {
-  const inviteLink = `${window.location.href}`;
-  navigator.clipboard.writeText(inviteLink)
-    .then(() => {
+    const inviteLink = `${window.location.href}`;
+    console.log(inviteLink);
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(inviteLink)
+        .then(() => {
+          alert(`Invite link copied to clipboard: ${inviteLink}`);
+        })
+        .catch((error) => {
+          console.error(`Failed to copy invite link: ${error}`);
+        });
+    } else {
+      // Fallback for browsers that do not support the Clipboard API
+      const dummyInput = document.createElement("textarea");
+      dummyInput.value = inviteLink;
+      document.body.appendChild(dummyInput);
+      dummyInput.select();
+      document.execCommand("copy");
+      document.body.removeChild(dummyInput);
       alert(`Invite link copied to clipboard: ${inviteLink}`);
-    })
-    .catch((error) => {
-      console.error(`Failed to copy invite link: ${error}`);
-    });
-});
+    }
+  });
+  
+
     let input = document.querySelector('textarea[name="message"]');
     input.addEventListener("input", (e) => {
       let message = e.target.value;
