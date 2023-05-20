@@ -2,7 +2,9 @@
 {% block head %}
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/theme/dracula.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/addon/hint/show-hint.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/addon/hint/show-hint.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/python/python.min.js"></script>
 {% endblock head %}
 
@@ -49,7 +51,10 @@
     var editor = CodeMirror.fromTextArea(document.getElementById("text-area"), {
       lineNumbers: true,
       mode: "python",
-      theme: "dracula"
+      theme: "dracula",
+      extraKeys: {
+        "Ctrl-Space": "autocomplete"
+      }
     });
     
     let previous = editor.getValue();
