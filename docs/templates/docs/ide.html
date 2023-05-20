@@ -6,6 +6,16 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/addon/hint/show-hint.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/python/python.min.js"></script>
+
+  <style>
+    @media (max-width: 991.98px) {
+      .btn-group {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+  </style>
+  
 {% endblock head %}
 
 {% block content %}
@@ -21,11 +31,12 @@
             <div class="form-group mb-3">
               <textarea name="message" cols="50" rows="20" id="text-area" class="form-control">{{ project.content }}</textarea>
             </div>
-            <div class="btn-group mb-3" role="group">
+            <div class="btn-group mb-3 d-flex flex-wrap justify-content-lg-start justify-content-center" role="group">
               <button type="submit" id="run-btn" class="btn btn-primary btn-lg mr-2">Run</button>
               <button type="button" id="stop-btn" class="btn btn-danger mr-2">Stop</button>
               <button type="button" id="clear-terminal-btn" class="btn btn-secondary mr-2">Clear Terminal</button>
               <button type="button" id="share-link-btn" class="btn btn-info">Share Invite Link</button>
+              <button type="button" id="download-btn" class="btn btn-success">Download Python File</button>
             </div>
 
             <input type="hidden" id="project-id" value="{{ project.id }}">
@@ -35,7 +46,6 @@
     </div>
   </div>
 </div>
-
 
   
   {{ project.slug|json_script:"json-projectname" }}
@@ -83,6 +93,17 @@
         'room_id': roomId
       }));
     };
+
+    document.getElementById('download-btn').addEventListener('click', function () {
+      let text = editor.getValue(); 
+      let element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+      element.setAttribute('download', roomName);
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    });
 
     chatSocket.onmessage = function (e) {
       let data = JSON.parse(e.data);
