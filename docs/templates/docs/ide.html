@@ -97,13 +97,14 @@
     document.getElementById('download-btn').addEventListener('click', function () {
       let text = editor.getValue(); 
       let element = document.createElement('a');
-      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-      element.setAttribute('download', roomName);
+      element.setAttribute('href', 'data:text/x-python;charset=utf-8,' + encodeURIComponent(text));
+      element.setAttribute('download', roomName + '.py');
       element.style.display = 'none';
       document.body.appendChild(element);
       element.click();
       document.body.removeChild(element);
     });
+    
 
     chatSocket.onmessage = function (e) {
       let data = JSON.parse(e.data);
